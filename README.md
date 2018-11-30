@@ -25,7 +25,7 @@ Create a new json file. The file should have following layout:
       "AccessType": "Admin" // ReadOnly or Admin, ReadOnly is the default
     },
     {
-      "DatabaseName": "Nucleus",
+      "DatabaseName": "MyDatabase",
       "Name": "MyReadOnlyCollection",
     }
   ]
