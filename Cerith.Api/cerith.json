@@ -1,0 +1,18 @@
+﻿{
+  "Service": {
+    "MongoConnectionString": "mongodb://localhost:27017",
+    "Collections": [
+      {
+        "DatabaseName": "Nucleus",
+        "Name": "Structure",
+        "AccessType": "ReadOnly"
+      },
+      {
+        "DatabaseName": "Nucleus",
+        "Name": "StructureMetadata",
+        "Path": "api/structure/metadata" ,
+        "AccessType": "ReadOnly"
+      }
+    ]
+  }
+} 

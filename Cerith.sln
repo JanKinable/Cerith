@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cerith", "Cerith\Cerith.csproj", "{3F3A616B-DB8C-4076-9C5F-A75DFCD58818}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cerith.Example", "Cerith.Example\Cerith.Example.csproj", "{0D264422-E080-4BF3-AB6C-E5E61B2AD3FB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3F3A616B-DB8C-4076-9C5F-A75DFCD58818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F3A616B-DB8C-4076-9C5F-A75DFCD58818}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F3A616B-DB8C-4076-9C5F-A75DFCD58818}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F3A616B-DB8C-4076-9C5F-A75DFCD58818}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D264422-E080-4BF3-AB6C-E5E61B2AD3FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D264422-E080-4BF3-AB6C-E5E61B2AD3FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D264422-E080-4BF3-AB6C-E5E61B2AD3FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D264422-E080-4BF3-AB6C-E5E61B2AD3FB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {64BC12CC-CAD1-46C8-906E-A6CB6887E674}
+	EndGlobalSection
+EndGlobal

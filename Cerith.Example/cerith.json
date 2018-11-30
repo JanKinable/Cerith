@@ -1,0 +1,16 @@
+﻿{
+  "MongoConnectionString": "mongodb://localhost:27017",
+  "Collections": [
+    {
+      "DatabaseName": "Nucleus",
+      "Name": "Structure",
+      "AccessType": "Admin"
+    },
+    {
+      "DatabaseName": "Nucleus",
+      "Name": "StructureMetadata",
+      "Route": "/api/structure/metadata/",
+      "AccessType": "ReadOnly"
+    }
+  ]
+}
