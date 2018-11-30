@@ -103,6 +103,13 @@ GET http://localhost:1234/api/mycollection/attributes?_id=1
 ```
 This will return an array with only one item.
 
+You can use any available property from the document, also nested.
+If, for instance, the object has a nested property moreInfo.type, you can use this in your query as such.
+```javascript
+GET http://localhost:1234/api/mycollection/attributes?moreInfo.type=helpfull
+```
+This will return all documents with the property moreInfo.type set to 'helpfull'
+
 * Via Mongo filter syntax parameter
 ```javascript
 GET http://localhost:1234/api/mycollection/attributes?filter={'_id', '1'}
