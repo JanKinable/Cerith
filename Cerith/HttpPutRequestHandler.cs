@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-
 namespace Cerith
 {
     public class HttpPutRequestHandler : IHttpRequestHandler
@@ -24,17 +23,12 @@ namespace Cerith
 
         public async Task<bool> HandleRequest(HttpContext context)
         {
-            var reqPath = context.Request.Path.Value.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            var path = $"/{string.Join("/", reqPath.SkipLast(1))}";
-            var id = reqPath.Last();
+            var operation = context.Request.Path.Value;
+            var cerithRoute = _cerithConfiguration.Collections.Select(x => RouteInfo.Create(x, operation, "PUT"))
+                .OrderByDescending(x => x.Probability)
+                .FirstOrDefault();
 
-            var cerithMap = _cerithConfiguration.Collections.FirstOrDefault(x =>
-            {
-                var route = x.GetCerithRoute();
-                return route.Path == path;
-            });
-
-            if (cerithMap == null)
+            if (cerithRoute == null)
                 return false;
 
             string json = "";
@@ -43,16 +37,16 @@ namespace Cerith
                 json = reader.ReadToEnd();
             }
 
-            if (cerithMap.AccessType != CollectionAccessType.Admin)
+            if (cerithRoute.Collection.AccessType != CollectionAccessType.Admin)
             {
-                await context.Response.Error(HttpStatusCode.Unauthorized, $"You need admin permissions to update a document in the {cerithMap.Name} collection.");
+                await context.Response.Error(HttpStatusCode.Unauthorized, $"You need admin permissions to update a document in the {cerithRoute.Collection.Name} collection.");
                 return true;
             }
 
-            var db = _client.GetDatabase(cerithMap.DatabaseName);
-            var collection = db.GetCollection<BsonDocument>(cerithMap.Name);
+            var db = _client.GetDatabase(cerithRoute.Collection.DatabaseName);
+            var collection = db.GetCollection<BsonDocument>(cerithRoute.Collection.Name);
             
-            var filter = Builders<BsonDocument>.Filter.Eq(s => s[cerithMap.IdName], id);
+            var filter = Builders<BsonDocument>.Filter.Eq(s => s[cerithRoute.IdentifierKeyValue.Key], cerithRoute.IdentifierKeyValue.Value);
             var doc = BsonDocument.Parse(json);
 
             context.Response.ContentType = "application/json";

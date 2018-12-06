@@ -26,37 +26,27 @@ namespace Cerith
             var path = context.Request.Path.Value;
             if (path.EndsWith('/')) path = path.Substring(0, path.Length - 2);
 
-            var cerithMaps = _cerithConfiguration.Collections.Where(x =>
-            {
-                var route = x.GetCerithRoute();
-                return path.Equals(route.Path, StringComparison.OrdinalIgnoreCase);
-            }).ToArray();
+            var cerithRoute = _cerithConfiguration.Collections.Select(x => RouteInfo.Create(x, path, "POST"))
+                .OrderByDescending(x => x.Probability)
+                .FirstOrDefault();
 
-            if (!cerithMaps.Any())
+            if (cerithRoute == null)
                 return false;
 
-            if (cerithMaps.Length > 1)
-            {
-                await context.Response.Error(HttpStatusCode.BadRequest, $"The url does not point to a unique handler. Found candidates: {string.Join(",", cerithMaps.Select(x => x.Route))}");
-                return true;
-            }
-
-            var cerithMap = cerithMaps.First();
-
-            string json = "";
+            var json = "";
             using (var reader = new StreamReader(context.Request.Body))
             {
                 json = reader.ReadToEnd();
             }
 
-            if (cerithMap.AccessType != CollectionAccessType.Admin)
+            if (cerithRoute.Collection.AccessType != CollectionAccessType.Admin)
             {
-                await context.Response.Error(HttpStatusCode.Unauthorized, $"You need admin permissions to add a document to the {cerithMap.Name} collection.");
+                await context.Response.Error(HttpStatusCode.Unauthorized, $"You need admin permissions to add a document to the {cerithRoute.Collection.Name} collection.");
                 return true;
             }
 
-            var db = _client.GetDatabase(cerithMap.DatabaseName);
-            var collection = db.GetCollection<BsonDocument>(cerithMap.Name);
+            var db = _client.GetDatabase(cerithRoute.Collection.DatabaseName);
+            var collection = db.GetCollection<BsonDocument>(cerithRoute.Collection.Name);
 
             var doc = BsonDocument.Parse(json);
 

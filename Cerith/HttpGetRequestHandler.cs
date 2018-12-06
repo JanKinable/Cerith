@@ -24,25 +24,17 @@ namespace Cerith
         public async Task<bool> HandleRequest(HttpContext context)
         {
             var operation = context.Request.Path.Value;
+            var cerithRoute = _cerithConfiguration.Collections.Select(x => RouteInfo.Create(x, operation, "GET"))
+                .OrderByDescending(x => x.Probability)
+                .FirstOrDefault();
 
-            var cerithMaps = _cerithConfiguration.Collections.Where(x =>
-            {
-                var route = x.GetCerithRoute();
-                return context.Request.Path.StartsWithSegments(route.Path, StringComparison.OrdinalIgnoreCase);
-            }).ToArray();
-
-            if (!cerithMaps.Any())
+            if (cerithRoute == null)
                 return false;
 
-            var mostProbable = cerithMaps.OrderBy(x => x.Route.Length).Last();
-
-            var isById = false;
             string filter;
-            if (operation.Length > mostProbable.Route.Length)
+            if (cerithRoute.IsById)
             {
-                var idPart = operation.Substring(mostProbable.Route.Length).Replace("/", "");
-                filter = "{'" + mostProbable.IdName + "':'" + idPart + "'}";
-                isById = true;
+                filter = $"{{'{cerithRoute.IdentifierKeyValue.Key}':'{cerithRoute.IdentifierKeyValue.Value}'}}";
             }
             else if (context.Request.Query.ContainsKey("filter"))
             {
@@ -54,17 +46,17 @@ namespace Cerith
                 filter = "{" + string.Join(",", args) + " }";
             }
 
-            var db = _client.GetDatabase(mostProbable.DatabaseName);
-            var collection = db.GetCollection<BsonDocument>(mostProbable.Name);
+            var db = _client.GetDatabase(cerithRoute.Collection.DatabaseName);
+            var collection = db.GetCollection<BsonDocument>(cerithRoute.Collection.Name);
 
             var req = collection.FindAsync(filter);
             string result;
-            if (isById)
+            if (cerithRoute.IsById)
             {
                 var doc = await req.Result.FirstAsync();
                 if (doc == null)
                 {
-                    context.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     return true;
                 }
                 result = doc.ToJson();
@@ -80,6 +72,7 @@ namespace Cerith
             context.Response.StatusCode = 200;
             await context.Response.WriteAsync(result);
             return true;
+
         }
     }
 }
