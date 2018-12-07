@@ -34,7 +34,7 @@ namespace Cerith
             {
                 var srcItem = src.Length > i ? src[i] : string.Empty;
                 var trgItem = trg.Length > i ? trg[i] : string.Empty;
-                if (srcItem != trgItem && srcItem.StartsWith("{"))
+                if (srcItem != trgItem && srcItem.StartsWith("{") && !string.IsNullOrEmpty(trgItem))
                 {
                     HasIdentifier = true;
                     IdentifierKeyValue = new KeyValuePair<string, string>(srcItem.Substring(1, srcItem.Length -2), trgItem);
@@ -59,7 +59,7 @@ namespace Cerith
         {
             get
             {
-                if (HasIdentifier)
+                if (IsById)
                 {
                     NrOfEqualSegments += 1;
                 }

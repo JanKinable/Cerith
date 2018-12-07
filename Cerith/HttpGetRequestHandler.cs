@@ -28,7 +28,7 @@ namespace Cerith
                 .OrderByDescending(x => x.Probability)
                 .FirstOrDefault();
 
-            if (cerithRoute == null)
+            if (cerithRoute == null || Math.Abs(cerithRoute.NrOfEqualSegments - 1) <= 0) 
                 return false;
 
             string filter;
