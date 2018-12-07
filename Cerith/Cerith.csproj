@@ -10,8 +10,8 @@
     <Copyright>Elbanique</Copyright>
     <PackageProjectUrl>https://github.com/JanKinable/Cerith</PackageProjectUrl>
     <PackageTags>mongodb; asp-net-core</PackageTags>
-    <PackageIconUrl>https://1drv.ms/u/s!AoDslxkK2p014ms9vs2pttqrRNQQ</PackageIconUrl>
-    <Version>1.0.2</Version>
+    <PackageIconUrl>https://jankinable.files.wordpress.com/2018/12/cerith2.jpg</PackageIconUrl>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
