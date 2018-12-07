@@ -11,22 +11,31 @@ namespace Cerith
     public class Collection
     {
         private CerithRoute _route;
+        private string _routeVal;
         public string Name { get; set; }
         public string DatabaseName { get; set; }
 
         public string IdName { get; set; } = "_id";
 
-        public string Route { get; set; }
+        public string Route
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_routeVal)) GetCerithRoute();
+                return _routeVal;
+            }
+            set => _routeVal = value;
+        }
 
         public CerithRoute GetCerithRoute()
         {
             if (_route == null)
             {
-                if (string.IsNullOrEmpty(Route))
+                if (string.IsNullOrEmpty(_routeVal))
                 {
-                    Route = $"/api/{Name}/";
+                    _routeVal = $"/api/{Name}/";
                 }
-                _route = CerithRoute.Parse(Route, IdName);
+                _route = CerithRoute.Parse(_routeVal, IdName);
             }
             return _route;
         }
