@@ -21,7 +21,7 @@ namespace Cerith
             if (sourceRoute.IndexOf('{') == -1 && method != "POST")
             {
                 //extend with id
-                sourceRoute += $"{{{source.IdName}}}";
+                sourceRoute += $"{{{source.IdName}:{source.IdType}}}";
             }
 
             var src = sourceRoute.Split("/", StringSplitOptions.RemoveEmptyEntries);
@@ -36,8 +36,18 @@ namespace Cerith
                 var trgItem = trg.Length > i ? trg[i] : string.Empty;
                 if (srcItem != trgItem && srcItem.StartsWith("{") && !string.IsNullOrEmpty(trgItem))
                 {
+                    if (!(source.IdType.Equals("guid",StringComparison.OrdinalIgnoreCase) && Guid.TryParse(trgItem, out Guid resGuid)))
+                    {
+                        continue;
+                    }
+
+                    if (!(source.IdType.Equals("int", StringComparison.OrdinalIgnoreCase) && int.TryParse(trgItem, out int resId)))
+                    {
+                        continue;
+                    }
+
                     HasIdentifier = true;
-                    IdentifierKeyValue = new KeyValuePair<string, string>(srcItem.Substring(1, srcItem.Length -2), trgItem);
+                    IdentifierKeyValue = new KeyValuePair<string, string>(srcItem.Substring(1, srcItem.Length -2).Split(':')[0], trgItem);
                     NrOfEqualSegments++;
                 }
 

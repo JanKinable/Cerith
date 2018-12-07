@@ -5,7 +5,7 @@ namespace Cerith
 {
     public class CerithRoute
     {
-        public static CerithRoute Parse(string value, string idName = "_id")
+        public static CerithRoute Parse(string value, string idName = "_id", string idType = "guid")
         {
             var route = new CerithRoute();
             var path = value;
@@ -13,11 +13,15 @@ namespace Cerith
             if (idxStart == -1)
             {
                 route.IdName = idName;
+                route.IdType = idType;
             }
             else
             {
                 var idxEnd = value.IndexOf('}');
-                route.IdName = value.Substring(idxStart + 1, idxEnd - 1 - idxStart);
+                var id = value.Substring(idxStart + 1, idxEnd - 1 - idxStart);
+                var idSplit = id.Split(':');
+                route.IdName = idSplit[0];
+                route.IdType = idSplit.Length > 1 ? idSplit[1] : idType;
                 path = value.Substring(0, idxStart - 2); //2= /{
             }
 
@@ -28,6 +32,6 @@ namespace Cerith
 
         public PathString Path{ get; set; }
         public string IdName { get; set; }
-
+        public string IdType { get; set; }
     }
 }

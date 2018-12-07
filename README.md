@@ -21,6 +21,7 @@ Create a new json file. The file should have following layout:
       "DatabaseName": "MyDatabase",
       "Name": "MyCollectionAttributes", //The collection name
       "IdName": "SpecialIdName", //optional: when the default collection id name is not '_id'
+      "IdType": "Guid",
       "Route": "/api/mycollection/attributes/", //optional: when not using default routing
       "AccessType": "Admin" // ReadOnly or Admin, ReadOnly is the default
     },
@@ -33,8 +34,21 @@ Create a new json file. The file should have following layout:
 ```
 When Route is not set, it defaults to `/api/{collectionname}/`.
 When IdName is not set, it defaults to `_id`.
+When IdType is not set, it defaults to Guid.
 When AccessType is not set, it defaults to `ReadOnly`.
 
+##### Working with id in the route:
+
+It's allowed to use an id in the route in the format of {[IdName]:[IdType]}. 
+Only types Guid and Int are allowed.
+The values IdName & IdType will then be overridden.
+
+Examples:
+```
+/api/mycollection/{_id:guid}/
+/api/mycollection/{_id:int}/attributes/
+```
+ 
 
 2. Add middleware in the Startup.cs
 

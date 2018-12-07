@@ -16,6 +16,7 @@ namespace Cerith
         public string DatabaseName { get; set; }
 
         public string IdName { get; set; } = "_id";
+        public string IdType { get; set; } = "Guid";
 
         public string Route
         {
@@ -35,7 +36,8 @@ namespace Cerith
                 {
                     _routeVal = $"/api/{Name}/";
                 }
-                _route = CerithRoute.Parse(_routeVal, IdName);
+                _route = CerithRoute.Parse(_routeVal, IdName, IdType);
+                IdType = _route.IdType;
             }
             return _route;
         }
