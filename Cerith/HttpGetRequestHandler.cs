@@ -24,17 +24,21 @@ namespace Cerith
         public async Task<bool> HandleRequest(HttpContext context)
         {
             var operation = context.Request.Path.Value;
-            var cerithRoute = _cerithConfiguration.Collections.Select(x => RouteInfo.Create(x, operation, "GET"))
-                .OrderByDescending(x => x.Probability)
-                .FirstOrDefault();
+            if (!operation.EndsWith('/')) operation += "/";
 
-            if (cerithRoute == null || Math.Abs(cerithRoute.NrOfEqualSegments - 1) <= 0) 
-                return false;
+            var routes = _cerithConfiguration.Collections
+                .Select(x => RouteComparer.Equals(x, operation, "GET"))
+                .Where(x => x.Result).ToArray();
+            if (routes.Length  != 1) return false;
+
+            var route = routes[0];
 
             string filter;
-            if (cerithRoute.IsById)
+            var isById = false;
+            if (RouteComparer.TryGetId(route.Route, operation, out string idName, out string idValue))
             {
-                filter = $"{{'{cerithRoute.IdentifierKeyValue.Key}':'{cerithRoute.IdentifierKeyValue.Value}'}}";
+                filter = $"{{'{idName}':'{idValue}'}}";
+                isById = true;
             }
             else if (context.Request.Query.ContainsKey("filter"))
             {
@@ -46,12 +50,12 @@ namespace Cerith
                 filter = "{" + string.Join(",", args) + " }";
             }
 
-            var db = _client.GetDatabase(cerithRoute.Collection.DatabaseName);
-            var collection = db.GetCollection<BsonDocument>(cerithRoute.Collection.Name);
+            var db = _client.GetDatabase(route.Collection.DatabaseName);
+            var collection = db.GetCollection<BsonDocument>(route.Collection.Name);
 
             var req = collection.FindAsync(filter);
             string result;
-            if (cerithRoute.IsById)
+            if (isById)
             {
                 var doc = await req.Result.FirstAsync();
                 if (doc == null)

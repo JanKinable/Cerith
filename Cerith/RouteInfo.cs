@@ -1,83 +1,123 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Cerith
 {
-    public class RouteInfo
+    public static class RouteComparer
     {
-        private readonly int _maxIdx;
-
-        public static RouteInfo Create(Collection source, string target, string method)
+        public static RouteCompareResult Equals(Collection candidate, string operation, string methode)
         {
-            return new RouteInfo(source, target, method);
+            if (!operation.EndsWith("/")) operation += "/";
+
+            switch (methode)
+            {
+                case "GET" when candidate.Routes.GetList == operation:
+                    return new RouteCompareResult
+                    {
+                        Result = true,
+                        Route = candidate.Routes.GetList,
+                        Collection = candidate
+                    };
+                case "GET":
+                    return new RouteCompareResult
+                    {
+                        Result = CheckById(candidate.Routes.GetById, operation),
+                        Route = candidate.Routes.GetById,
+                        Collection = candidate
+                    };
+                case "PUT":
+                    return new RouteCompareResult
+                    {
+                        Result = CheckById(candidate.Routes.Update, operation),
+                        Route = candidate.Routes.Update,
+                        Collection = candidate
+                    };
+                case "POST" when candidate.Routes.Create == operation:
+                    return new RouteCompareResult
+                    {
+                        Result = true,
+                        Route = candidate.Routes.Create,
+                        Collection = candidate
+                    };
+                default:
+                    return new RouteCompareResult { Result = false };
+            }
         }
 
-        private RouteInfo(Collection source, string target, string method)
+        private static bool CheckById(string route, string operation)
         {
-            Collection = source;
-            var sourceRoute = source.Route;
+            var candidateParts = route.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+            var operationParts = operation.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (candidateParts.Count != operationParts.Length) return false;
 
-            //src should always contain an id
-            if (sourceRoute.IndexOf('{') == -1 && method != "POST")
+            for (var i = 0; i < operationParts.Length; i++)
             {
-                //extend with id
-                sourceRoute += $"{{{source.IdName}:{source.IdType}}}";
-            }
-
-            var src = sourceRoute.Split("/", StringSplitOptions.RemoveEmptyEntries);
-            var trg = target.Split("/", StringSplitOptions.RemoveEmptyEntries);
-            _maxIdx = Math.Max(src.Length, trg.Length);
-            SourceSegmentCount = src.Length;
-            TargetSegmentCount = trg.Length;
-
-            for (var i = 0; i < _maxIdx; i++)
-            {
-                var srcItem = src.Length > i ? src[i] : string.Empty;
-                var trgItem = trg.Length > i ? trg[i] : string.Empty;
-                if (srcItem != trgItem && srcItem.StartsWith("{") && !string.IsNullOrEmpty(trgItem))
+                if (candidateParts[i].StartsWith("{"))
                 {
-                    if (!(source.IdType.Equals("guid",StringComparison.OrdinalIgnoreCase) && Guid.TryParse(trgItem, out Guid resGuid)))
+                    var idParts = candidateParts[i].Split(":");
+                    //check on type only
+                    var typePart = idParts[1].Substring(0, idParts[1].Length - 1);
+                    if (typePart.Equals("guid", StringComparison.Ordinal))
                     {
-                        continue;
+                        if (Guid.TryParse(operationParts[i], out var resGuid))
+                        {
+                            continue;
+                        }
+
+                        return false;
                     }
 
-                    if (!(source.IdType.Equals("int", StringComparison.OrdinalIgnoreCase) && int.TryParse(trgItem, out int resId)))
+                    if (typePart.Equals("int", StringComparison.Ordinal))
                     {
-                        continue;
+                        if (int.TryParse(operationParts[i], out var resInt))
+                        {
+                            continue;
+                        }
+
+                        return false;
                     }
-
-                    HasIdentifier = true;
-                    IdentifierKeyValue = new KeyValuePair<string, string>(srcItem.Substring(1, srcItem.Length -2).Split(':')[0], trgItem);
-                    NrOfEqualSegments++;
+                    
                 }
-
-                if (srcItem == trgItem)
+                else if (!candidateParts[i].Equals(operationParts[i], StringComparison.OrdinalIgnoreCase))
                 {
-                    NrOfEqualSegments++;
+                    return false;
                 }
             }
+
+            return true;
         }
 
-        public Collection Collection { get; }
-        public int SourceSegmentCount { get; set; }
-        public int TargetSegmentCount { get; set; }
-        public double NrOfEqualSegments { get; set; }
-
-        public bool HasIdentifier { get; set; }
-        public KeyValuePair<string, string> IdentifierKeyValue { get; set; }
-        public double Probability
+        public static bool TryGetId(string route, string operation, out string idName, out string idValue)
         {
-            get
+            idName = string.Empty;
+            idValue = string.Empty;
+            var splittedRoute = route.Split('/', StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var idx = splittedRoute
+                .Select((s, i) => new { Index = i, Value= s })
+                .Where(t => t.Value.StartsWith("{"))
+                .Select(t => t.Index)
+                .FirstOrDefault();
+            if (idx == 0)
             {
-                if (IsById)
-                {
-                    NrOfEqualSegments += 1;
-                }
-
-                return NrOfEqualSegments / _maxIdx;
+                return false;
             }
+
+            var operationParts = operation.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            if (operationParts.Length - 1 < idx)
+            {
+                return false;
+            }
+
+            idName = splittedRoute[idx].Split(":")[0].Substring(1);
+            idValue = operationParts[idx];
+            return true;
         }
 
-        public bool IsById => HasIdentifier && !string.IsNullOrEmpty(IdentifierKeyValue.Value);
+        public class RouteCompareResult
+        {
+            public string Route { get; set; }
+            public bool Result { get; set; }
+            public Collection Collection { get; set; }
+        }
     }
 }

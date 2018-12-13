@@ -23,15 +23,14 @@ namespace Cerith
 
         public async Task<bool> HandleRequest(HttpContext context)
         {
-            var path = context.Request.Path.Value;
-            if (path.EndsWith('/')) path = path.Substring(0, path.Length - 2);
+            var operation = context.Request.Path.Value;
+            if (!operation.EndsWith('/')) operation += "/";
 
-            var cerithRoute = _cerithConfiguration.Collections.Select(x => RouteInfo.Create(x, path, "POST"))
-                .OrderByDescending(x => x.Probability)
-                .FirstOrDefault();
-
-            if (cerithRoute == null)
-                return false;
+            var routes = _cerithConfiguration.Collections
+                .Select(x => RouteComparer.Equals(x, operation, "POST"))
+                .Where(x => x.Result).ToArray();
+            if (routes.Length != 1) return false;
+            var route = routes[0];
 
             var json = "";
             using (var reader = new StreamReader(context.Request.Body))
@@ -39,14 +38,8 @@ namespace Cerith
                 json = reader.ReadToEnd();
             }
 
-            if (cerithRoute.Collection.AccessType != CollectionAccessType.Admin)
-            {
-                await context.Response.Error(HttpStatusCode.Unauthorized, $"You need admin permissions to add a document to the {cerithRoute.Collection.Name} collection.");
-                return true;
-            }
-
-            var db = _client.GetDatabase(cerithRoute.Collection.DatabaseName);
-            var collection = db.GetCollection<BsonDocument>(cerithRoute.Collection.Name);
+            var db = _client.GetDatabase(route.Collection.DatabaseName);
+            var collection = db.GetCollection<BsonDocument>(route.Collection.Name);
 
             var doc = BsonDocument.Parse(json);
 

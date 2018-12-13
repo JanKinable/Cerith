@@ -24,12 +24,13 @@ namespace Cerith
         public async Task<bool> HandleRequest(HttpContext context)
         {
             var operation = context.Request.Path.Value;
-            var cerithRoute = _cerithConfiguration.Collections.Select(x => RouteInfo.Create(x, operation, "PUT"))
-                .OrderByDescending(x => x.Probability)
-                .FirstOrDefault();
+            if (!operation.EndsWith('/')) operation += "/";
 
-            if (cerithRoute == null)
-                return false;
+            var routes = _cerithConfiguration.Collections
+                .Select(x => RouteComparer.Equals(x, operation, "PUT"))
+                .Where(x => x.Result).ToArray();
+            if (routes.Length != 1) return false;
+            var route = routes[0];
 
             string json = "";
             using (var reader = new StreamReader(context.Request.Body))
@@ -37,16 +38,15 @@ namespace Cerith
                 json = reader.ReadToEnd();
             }
 
-            if (cerithRoute.Collection.AccessType != CollectionAccessType.Admin)
+            var db = _client.GetDatabase(route.Collection.DatabaseName);
+            var collection = db.GetCollection<BsonDocument>(route.Collection.Name);
+
+            if (!RouteComparer.TryGetId(route.Route, operation, out string idName, out string idValue))
             {
-                await context.Response.Error(HttpStatusCode.Unauthorized, $"You need admin permissions to update a document in the {cerithRoute.Collection.Name} collection.");
-                return true;
+                return false;
             }
 
-            var db = _client.GetDatabase(cerithRoute.Collection.DatabaseName);
-            var collection = db.GetCollection<BsonDocument>(cerithRoute.Collection.Name);
-            
-            var filter = Builders<BsonDocument>.Filter.Eq(s => s[cerithRoute.IdentifierKeyValue.Key], cerithRoute.IdentifierKeyValue.Value);
+            var filter = Builders<BsonDocument>.Filter.Eq(s => s[idName], idValue);
             var doc = BsonDocument.Parse(json);
 
             context.Response.ContentType = "application/json";
