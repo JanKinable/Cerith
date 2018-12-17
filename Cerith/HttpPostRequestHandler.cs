@@ -14,10 +14,10 @@ namespace Cerith
     {
         private readonly CerithConfiguration _cerithConfiguration;
         private readonly MongoClient _client;
-        public HttpPostRequestHandler(IOptions<CerithConfiguration> options,
+        public HttpPostRequestHandler(IOptionsMonitor<CerithConfiguration> options,
             MongoClient mongoClient)
         {
-            _cerithConfiguration = options.Value;
+            _cerithConfiguration = options.CurrentValue;
             _client = mongoClient;
         }
 

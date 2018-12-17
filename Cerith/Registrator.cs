@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
+using MongoDB.Bson.IO;
 
 namespace Cerith
 {
@@ -47,7 +48,12 @@ namespace Cerith
             {
                 throw new ApplicationException("Missing CerithConfiguration or AddCerith not being called.");
             }
-           
+
+            var monitor = builder.ApplicationServices.GetService<IOptionsMonitor<CerithConfiguration>>();
+            monitor.OnChange((configuration, s) =>
+            {
+                Console.WriteLine($"New config loaded : {Newtonsoft.Json.JsonConvert.SerializeObject(configuration)}"); 
+            });
 
             return builder.UseMiddleware<CerithMiddleware>(builder.ApplicationServices);
         }
