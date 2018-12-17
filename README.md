@@ -16,32 +16,34 @@ Create a new json file. The file should have following layout:
 ```javascript
 {
   "MongoConnectionString": "{{connectionstring}}",
-  "Collections": [
+  "Collections":  [
     {
-      "DatabaseName": "MyDatabase",
-      "Name": "MyCollectionAttributes", //The collection name
-      "IdName": "SpecialIdName", //optional: when the default collection id name is not '_id'
-      "IdType": "Guid",
-      "Route": "/api/mycollection/attributes/", //optional: when not using default routing
-      "AccessType": "Admin" // ReadOnly or Admin, ReadOnly is the default
+      "DatabaseName": "my-database",
+      "Name": "my-collection",
+      "Routes": {
+        "GetList": "/api/mycollection/",
+        "GetById": "/api/mycollection/{_id:guid}",
+        "Create": "/api/mycollection/",
+        "Update": "/api/mycollection/{_id:guid}"
+      }
     },
     {
-      "DatabaseName": "MyDatabase",
-      "Name": "MyReadOnlyCollection",
+      "DatabaseName": "my-database",
+      "Name": "my-collection-attributes",
+      "Routes": {
+        "GetList": "/api/mycollection/attributes/",
+        "GetById": "/api/mycollection/{_id:guid}/attributes",
+        "Create": "/api/mycollection/attributes",
+        "Update": "/api/mycollection/{_id:guid}/attributes"
+      }
     }
   ]
 }
 ```
-When Route is not set, it defaults to `/api/{collectionname}/`.
-When IdName is not set, it defaults to `_id`.
-When IdType is not set, it defaults to Guid.
-When AccessType is not set, it defaults to `ReadOnly`.
 
 ##### Working with id in the route:
 
-It's allowed to use an id in the route in the format of {[IdName]:[IdType]}. 
-Only types Guid and Int are allowed.
-The values IdName & IdType will then be overridden.
+Only types Guid and Int are allowed (not case sensitive).
 
 Examples:
 ```
