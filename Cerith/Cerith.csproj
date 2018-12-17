@@ -12,7 +12,7 @@
     <PackageTags>mongodb; asp-net-core</PackageTags>
     <PackageIconUrl>https://jankinable.files.wordpress.com/2018/12/cerith2.jpg</PackageIconUrl>
     <Version>1.1.1</Version>
-    <PackageReleaseNotes>Simplifying routing and explicit routing patterns in config</PackageReleaseNotes>
+    <PackageReleaseNotes>Auto reload configuration changes</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
