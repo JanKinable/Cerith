@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://github.com/JanKinable/Cerith</PackageProjectUrl>
     <PackageTags>mongodb; asp-net-core</PackageTags>
     <PackageIconUrl>https://jankinable.files.wordpress.com/2018/12/cerith2.jpg</PackageIconUrl>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <PackageReleaseNotes>Simplifying routing and explicit routing patterns in config</PackageReleaseNotes>
   </PropertyGroup>
 
